@@ -33,3 +33,5 @@
 
 #Backups
 old/*
+.gitattributes
+.gitignore
