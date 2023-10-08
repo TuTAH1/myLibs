@@ -1,6 +1,9 @@
-String.prototype.isNullOrEmpty = function () {
-	return this === null || this === undefined || this === '';
-}
+
+if (!String.prototype.isNullOrEmpty) {
+	String.prototype.isNullOrEmpty = function () {
+	  return this === null || this === undefined || this === '';
+	};
+  }
 
 function swap(array, aIndex, bIndex) {
 	var temp = array[aIndex];
