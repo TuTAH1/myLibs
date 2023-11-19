@@ -41,7 +41,6 @@
 old/*
 */Debug/*
 Debug/
-
 .gitattributes
 .gitignore
 desktop.ini
