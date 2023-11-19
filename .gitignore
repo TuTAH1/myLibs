@@ -31,7 +31,17 @@
 *.out
 *.app
 
+# Chache files
+*/.vs/*
+*.vsidx
+*.suo
+*\obj\*
+
 #Backups
 old/*
+*/Debug/*
+Debug/
+
 .gitattributes
 .gitignore
+desktop.ini
