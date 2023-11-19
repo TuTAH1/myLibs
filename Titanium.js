@@ -1,7 +1,9 @@
 
-String.prototype.isNullOrEmpty = function () {
-	return this === null || this === undefined || this === '';
-}
+if (!String.prototype.isNullOrEmpty) {
+	String.prototype.isNullOrEmpty = function () {
+	  return (this === null || this === undefined || this === '');
+	};
+  }
 
 function swap(array, aIndex, bIndex) {
 	var temp = array[aIndex];
@@ -9,7 +11,7 @@ function swap(array, aIndex, bIndex) {
 	array[bIndex] = temp;
 }
 
-String.prototype.slice = function (Start, End, AlwaysReturnString = false, LastStart = false, LastEnd = true, IncludeStart = false, IncludeEnd = false) {
+String.prototype.Tslice = function (Start, End, AlwaysReturnString = false, LastStart = false, LastEnd = true, IncludeStart = false, IncludeEnd = false) {
 	if (this.isNullOrEmpty())
 		if (AlwaysReturnString)
 			return null;
