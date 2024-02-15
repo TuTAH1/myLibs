@@ -1,3 +1,4 @@
+// @js-check
 
 if (!String.prototype.isNullOrEmpty) {
 	String.prototype.isNullOrEmpty = function () {
@@ -11,53 +12,71 @@ function swap(array, aIndex, bIndex) {
 	array[bIndex] = temp;
 }
 
-String.prototype.Tslice = function (Start, End, AlwaysReturnString = false, LastStart = false, LastEnd = true, IncludeStart = false, IncludeEnd = false) {
+const sliceReturn = Object.freeze({
+	Always: 'always',
+	Start: 'start',
+	End: 'end',
+	Never: 'never'
+});
+
+String.prototype.Tslice = function (Start, End, SliceReturnSourceIfNotFound = sliceReturn.Never, LastStart = false, LastEnd = true, IncludeStart = false, IncludeEnd = false, throwException = false) {
 	if (this.isNullOrEmpty())
-		if (AlwaysReturnString)
-			return null;
-		else
+		if (throwException)
 			throw new Error("String is null or empty");
+		else
+			return null;
 
 	let start;
 	let end;
 	let BasicSlice = typeof Start == "number" && typeof End == "number";
 	let result = this;
 
-	switch (typeof Start) {
-		case "number":
-			start = Start;
-			if (start < 0) start = this.length + start; //: count from end if negative
-			if (start < 0 || start >= this.length)
-				if (AlwaysReturnString)
-					start = 0;
-				else
-					return null;
-			break;
-		case "string":
-			start = LastStart ? this.lastIndexOf(Start) : this.indexOf(Start);
-			if (start < 0) start = 0;
-			if (IncludeStart) start += Start.length;
-			break;
-		case "object":
-			if (Start instanceof RegExp) {
-				let match = LastStart ? Start.exec(this)[array.length-1] : Start.exec(this)[0];
-				start = match.index >= 0 ?
-					(match.index + (IncludeStart ? 0 : match[0].length)) : 0;
-			} else if (Start instanceof Array && Start.every(x => typeof x == "function")) {
-				start = Start.length > 0 ?
-					this.indexOfT({Start, IndexOfEnd: !IncludeStart, RightDirection: !LastStart}) : 0;
-				if (start < 0) start = 0;
-			} else
+	if (Start === null || Start === undefined)
+		start = 0;
+	else
+		switch (typeof Start) {
+			case "number":
+				start = Start;
+				if (start < 0) start = this.length + start; //: count from end if negative
+				if (start >= s.Length) return "";
+				break;
+
+			case "string":
+				start = indexOfT({s: this, s2: Start, IndexOfEnd: !IncludeStart //: if IncludeStart, start will be moved to the end of startsWith
+							, InvertDirection: LastStart //: if LastStart, search direction will be inverted (right to left)
+							}) + (IncludeStart? 0 : 1); //: go out of last letter of s2 if IncludeStart
+							
+						break;
+
+			case "object":
+				if (Start instanceof RegExp) {
+					let match = LastStart ? Start.exec(this)[array.length-1] : Start.exec(this)[0];
+					start = match.index >= 0 ?
+						(match.index + (IncludeStart ? 0 : match[0].length)) : 0;
+				} else if (Start instanceof Array && Start.every(x => typeof x == "function")) {
+					start = Start.length > 0 ?
+						indexOfT({s: this, s2: Start, IndexOfEnd: !IncludeStart, RightDirection: !LastStart}) : 0;
+					if (start < 0) start = 0;
+				} else
+					throw new Error("Type of Start is not supported");
+				break;
+
+			default:
 				throw new Error("Type of Start is not supported");
-			break;
-		default:
-			throw new Error("Type of Start is not supported");
-	}
+		}
+
+	 if (start < 0 || start >= this.length) {
+        if (['Always', 'Start'].includes(sliceReturnSourceIfNotFound)) return s;
+        if (throwException) throw new RangeError('Start index out of range');
+        return null;
+    }
 
 	if (!BasicSlice)
 		result = this.slice(start);
 
-
+	if (End === null || End === undefined)
+		end = this.length;
+	else
 	switch (typeof End) {
 		case "number":
 			end = End;
@@ -95,7 +114,7 @@ String.prototype.Tslice = function (Start, End, AlwaysReturnString = false, Last
 }
 
 
-String.prototype.indexOfT = function (Conditions, Start = 0, End = Infinity, RightDirection = true, IndexOfEnd = false) {
+function indexOfT(Conditions, Start = 0, End = Infinity, RightDirection = true, IndexOfEnd = false) {
 	if (End === Infinity) End = this.length - 1;
 	if (Start < 0) Start = this.length + Start;
 	if (Start < 0) throw new Error(`incorrect negative Start (${Start - this.length}). |Start| should be ≤ this.length (${this.length})`);
@@ -143,4 +162,55 @@ String.prototype.indexOfT = function (Conditions, Start = 0, End = Infinity, Rig
 
 	return (Result === -1 || IndexOfEnd ^ !RightDirection) ?
 		Result : (Result - Conditions.length) + 1;
+}
+
+function indexOfT(s, s2, start = 0, end = Infinity, invertDirection = false, indexOfEnd = false) {
+    if (end === Infinity) end = s.length - 1;
+    if (start < 0) start = s.length + start;
+    if (start < 0) throw new RangeError(`Incorrect negative Start (${start - s.length}). |Start| should be ≤ s.Length (${s.length})`);
+    if (end < 0) end = s.length + end;
+    if (end < 0) throw new RangeError(`Incorrect negative End (${end - s.length}). |End| should be ≤ s.Length (${s.length})`);
+    if (s == null) throw new Error('ArgumentNullException: s');
+    if (s2 == null) throw new Error('ArgumentNullException: s2');
+    if (s2.length === 0) return invertDirection ? s.length - 1 : 0;
+
+    if (end === start) return -2;
+
+    if ((!invertDirection && end < start) || (invertDirection && end > start)) {
+        let temp = start;
+        start = end;
+        end = temp;
+    }
+
+    let defaultCurMatchPos = invertDirection ? s2.length - 1 : 0;
+    let curMatchPos = defaultCurMatchPos;
+    let result = -1;
+
+    if (invertDirection) {
+        for (let i = start; i >= end; i--) {
+            if (s[i] === s2[curMatchPos]) {
+                curMatchPos--;
+                if (curMatchPos !== -1) continue;
+                result = i;
+                break;
+            } else {
+                i += ((s2.length - 1) - curMatchPos);
+                curMatchPos = defaultCurMatchPos;
+            }
+        }
+    } else {
+        for (let i = start; i <= end; i++) {
+            if (s[i] === s2[curMatchPos]) {
+                curMatchPos++;
+                if (curMatchPos !== s2.length) continue;
+                result = i;
+                break;
+            } else {
+                i -= curMatchPos;
+                curMatchPos = defaultCurMatchPos;
+            }
+        }
+    }
+
+    return result = result === -1 || indexOfEnd ^ invertDirection ? result : (result - s2.length) + 1;
 }
