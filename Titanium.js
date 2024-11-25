@@ -35,13 +35,13 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 		switch (typeof Start) {
 			case "number":
 				start = Start;
-				if (start < 0) start = Source.length + start; //: count from end if negative
-				if (start >= Source.length) return "";
+				if (start < 0) start = result.length + start; //: count from end if negative
+				if (start >= result.length) return "";
 				break;
 
 			case "string":
 						start = TindexOf(
-							Source.toString(), Start, 0, Infinity,
+							result.toString(), Start, 0, Infinity,
 							LastStart,    //: if LastStart, search direction will be inverted (right to left)
 							!IncludeStart //: if IncludeStart, start will be moved to the end of startsWith
 						) + (IncludeStart? 0 : 1); //: go out of last letter of s2 if IncludeStart
@@ -50,7 +50,7 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 
 			case "object":
 				if (Start instanceof RegExp) {
-					let match = LastStart ? Start.exec(Source) : Start.exec(Source);
+					let match = LastStart ? Start.exec(result) : Start.exec(result);
 					if (!match) return null;
 					let result = LastStart ? match[match.length-1] : match[0];
 					start = result.index >= 0 ?
@@ -58,7 +58,7 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 				} else if (Start instanceof Array && Start.every(x => typeof x == "function")) {
 					throw new Error("Not implemented");
 					//start = Start.length > 0 ?
-					//	TindexOf({s: Source, s2: Start, IndexOfEnd: !IncludeStart, RightDirection: !LastStart}) : 0;
+					//	TindexOf({s: result, s2: Start, IndexOfEnd: !IncludeStart, RightDirection: !LastStart}) : 0;
 					if (start < 0) start = 0;
 				} else
 					throw new Error("Type of Start is not supported");
@@ -68,7 +68,7 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 				throw new Error("Type of Start is not supported");
 		}
 
-	 if (start < 0 || start >= Source.length) {
+	 if (start < 0 || start >= result.length) {
 		if (['Always', 'Start'].includes(DefaultValueIfNotFound)) start = 0;
 		 else {
 			if (['Always', 'Start'].includes(SliceReturnSourceIfNotFound)) return s;
@@ -79,34 +79,34 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 	}
 
 	if (!BasicSlice)
-		result = Source.slice(start);
+		result = result.slice(start);
 
 	if (End === null || End === undefined)
-		end = Source.length;
+		end = result.length;
 	else
 	switch (typeof End) {
 		case "number":
 			end = End;
-			if (end < 0) end = Source.length + end; //: count from end if negative
+			if (end < 0) end = result.length + end; //: count from end if negative
 			if (BasicSlice && start > end) swap(start, end);
-			if (end > Source.length) end = Source.length;
+			if (end > result.length) end = result.length;
 			break;
 		case "string":
-			end = (LastEnd ? Source.lastIndexOf(End) : Source.indexOf(End));
-			if (end < 0) end = Source.length;
+			end = (LastEnd ? result.lastIndexOf(End) : result.indexOf(End));
+			if (end < 0) end = result.length;
 			if (IncludeEnd) end += End.length;
 			break;
 		case "object":
 			if (End instanceof RegExp) {
-				let match = LastEnd ? End.exec(Source).last() : End.exec(Source);
+				let match = LastEnd ? End.exec(result).last() : End.exec(result);
 				end = match.index >= 0 ?
 					(match.index + (LastEnd ? 0 : match[0].length)) : 0;
 			} else if (End instanceof Array && End.every(x => typeof x == "function")) {
 				end = End.length > 0 ?
-					indexOfT({Source, End, IndexOfEnd: IncludeEnd, RightDirection: !LastEnd}) : 0;
+					indexOfT({result, End, IndexOfEnd: IncludeEnd, RightDirection: !LastEnd}) : 0;
 				if (end < 0)
 					if (AlwaysReturnString)
-						end = Source.length - 1;
+						end = result.length - 1;
 					else
 						return null;
 			} else throw new Error("Type of End is not supported");
@@ -115,7 +115,7 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 			throw new Error("Type of End is not supported");
 	}
 
-	if (end < 0 || end > Source.length) {
+	if (end < 0 || end > result.length) {
 		if (['Always', 'End'].includes(DefaultValueIfNotFound)) end = 0;
 		 else {
 			if (['Always', 'End'].includes(SliceReturnSourceIfNotFound)) return s;
