@@ -1,6 +1,6 @@
 if (!String.prototype.isNullOrEmpty) {
 	String.prototype.isNullOrEmpty = function () {
-	  return (this === null || this === undefined || this === '');
+		return (!this || this.length === 0 || /^\s*$/.test(this));
 	};
   }
 
@@ -36,7 +36,7 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 			case "number":
 				start = Start;
 				if (start < 0) start = Source.length + start; //: count from end if negative
-				if (start >= Source.Length) return "";
+				if (start >= Source.length) return "";
 				break;
 
 			case "string":
@@ -48,9 +48,11 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 
 			case "object":
 				if (Start instanceof RegExp) {
-					let match = LastStart ? Start.exec(Source)[array.length-1] : Start.exec(Source)[0];
-					start = match.index >= 0 ?
-						(match.index + (IncludeStart ? 0 : match[0].length)) : 0;
+					let match = LastStart ? Start.exec(Source) : Start.exec(Source);
+					if (!match) return null;
+					let result = LastStart ? match[match.length-1] : match[0];
+					start = result.index >= 0 ?
+						(result.index + (IncludeStart ? 0 : result[0].length)) : 0;
 				} else if (Start instanceof Array && Start.every(x => typeof x == "function")) {
 					throw new Error("Not implemented");
 					//start = Start.length > 0 ?
@@ -84,7 +86,7 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 		case "number":
 			end = End;
 			if (end < 0) end = Source.length + end; //: count from end if negative
-			if (BasicSlice && start > end) Swap(start, end);
+			if (BasicSlice && start > end) swap(start, end);
 			if (end > Source.length) end = Source.length;
 			break;
 		case "string":
@@ -121,12 +123,11 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 	}
 
 	return BasicSlice ?
-		result.slice(start, (end - start)) :
+		result.slice(start, end) :
 		result.slice(0, end);
 }
 
-function TindexOf(s2, start = 0, end = Infinity, invertDirection = false, indexOfEnd = false) {
-	let s = this;
+function TindexOf(s, s2, start = 0, end = Infinity, invertDirection = false, indexOfEnd = false) {
 	if (end === Infinity) end = s.length - 1;
 	if (start < 0) start = s.length + start;
 	if (start < 0) throw new RangeError(`Incorrect negative Start (${start - s.length}). |Start| should be ≤ s.Length (${s.length})`);
