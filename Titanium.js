@@ -40,9 +40,11 @@ function Tslice(Source, Start, End = null, SliceReturnSourceIfNotFound = sliceRe
 				break;
 
 			case "string":
-				start = TindexOf({s: Source.toString(), s2: Start, IndexOfEnd: !IncludeStart //: if IncludeStart, start will be moved to the end of startsWith
-							, InvertDirection: LastStart //: if LastStart, search direction will be inverted (right to left)
-							}) + (IncludeStart? 0 : 1); //: go out of last letter of s2 if IncludeStart
+						start = TindexOf(
+							Source.toString(), Start, 0, Infinity,
+							LastStart,    //: if LastStart, search direction will be inverted (right to left)
+							!IncludeStart //: if IncludeStart, start will be moved to the end of startsWith
+						) + (IncludeStart? 0 : 1); //: go out of last letter of s2 if IncludeStart
 							
 						break;
 
