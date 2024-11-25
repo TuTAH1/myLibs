@@ -177,9 +177,21 @@ function TindexOf(s2, start = 0, end = Infinity, invertDirection = false, indexO
 	return result = result === -1 || indexOfEnd ^ invertDirection ? result : (result - s2.length) + 1;
 }
 
-module.exports = {
-	sliceReturn,
-	swap,
-	Tslice,
-	TindexOf
+const TitaniumExports = {
+    sliceReturn,
+    swap,
+    Tslice,
+    TindexOf
+};
+
+// Проверяем среду выполнения и экспортируем соответственно
+if (typeof module !== 'undefined' && module.exports) {
+    // Node.js environment
+    module.exports = TitaniumExports;
+} else if (typeof window !== 'undefined') {
+    // Browser environment
+    window.Titanium = TitaniumExports;
+} else {
+    // Other environments (e.g. Web Workers)
+    self.Titanium = TitaniumExports;
 }
